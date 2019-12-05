@@ -19,7 +19,7 @@ public class HT2 : PhysicsGame
 
     public override void Begin()
     {
-        // Level.Background.Image = LoadImage("Tausta");
+        Level.Background.Image = LoadImage("Tausta.png");
         Level.CreateBorders();
 
 
@@ -29,8 +29,8 @@ public class HT2 : PhysicsGame
         //PhysicsObject karkki = Karkit(this);
         LuoKyna();
 
-        // pelaaja.Image = LoadImage("LINUX");
-        // vesa.Image = LoadImage("spookyseason");
+        pelaaja.Image = LoadImage("LINUX.png");
+        vesa.Image = LoadImage("spookyseason.png");
 
 
         AddCollisionHandler(pelaaja, "kynis", kynaOsuuPelaajaan); ;
@@ -43,7 +43,7 @@ public class HT2 : PhysicsGame
         Keyboard.Listen(Key.Left, ButtonState.Down, LyoUkkoa, "lyö v", pelaaja, nopeusVasemmalle);
         Keyboard.Listen(Key.Escape, ButtonState.Pressed, Exit, "Lopeta peli");
 
-        // MediaPlayer.Play("KarkkiPeli_01");
+        // MediaPlayer.Play("KarkkiPeli_01.mp3");
         // MediaPlayer.IsRepeating = true;
 
         Timer synnytaOlioita = new Timer();
@@ -135,7 +135,7 @@ public class HT2 : PhysicsGame
         karkki.Y = 85;
         karkki.X = 85;
         karkki.Tag = "karkkis";
-        // karkki.Image = LoadImage("karkkiHR");
+        karkki.Image = LoadImage("karkkiHR.png");
         Vector suunta = RandomGen.NextVector(300, 400);
         karkki.Hit(suunta);
         karkki.LifetimeLeft = TimeSpan.FromSeconds(10.0);
@@ -156,7 +156,7 @@ public class HT2 : PhysicsGame
         kyna.Y = 100;
         kyna.X = 100;
         kyna.Tag = "kynis";
-        // kyna.Image = LoadImage("kynaHT");
+        kyna.Image = LoadImage("kynaHT.png");
         Vector suunta = RandomGen.NextVector(300, 400);
         kyna.Hit(suunta);
         kyna.LifetimeLeft = TimeSpan.FromSeconds(10.0);
