@@ -17,6 +17,9 @@ public class HT2 : PhysicsGame
     Vector nopeusVasemmalle = new Vector(-2000, 0);
     Vector nopeusOikealle = new Vector(2000, 0);
 
+    DoubleMeter elamaLaskuri;
+
+
     public override void Begin()
     {
         Level.Background.Image = LoadImage("Tausta.png");
@@ -24,10 +27,7 @@ public class HT2 : PhysicsGame
 
 
         PhysicsObject pelaaja = LuoNelikulmio(this, "pelaaja1", -350, -350);
-        PhysicsObject vesa = LuoNelikulmio(this, "vesa", 0, 0);
-        // PhysicsObject kyna = Kynat(this);
-        //PhysicsObject karkki = Karkit(this);
-        LuoKyna();
+        PhysicsObject vesa = LuoVesa(this, "vesa", 0, 0);
 
         pelaaja.Image = LoadImage("LINUX.png");
         vesa.Image = LoadImage("spookyseason.png");
@@ -52,9 +52,17 @@ public class HT2 : PhysicsGame
         synnytaOlioita.Start();
 
         Timer synnytaKarkkeja = new Timer();
-        synnytaKarkkeja.Interval = 3.0;
+        synnytaKarkkeja.Interval = 4.0;
         synnytaKarkkeja.Timeout += LuoKarkki;
         synnytaKarkkeja.Start();
+
+        /*Timer pisteet = new Timer();
+        pisteet.Interval = 1.0;
+        pisteet.Timeout += lisaaPiste;
+        pisteet.Start();*/
+
+        LuoElamaLaskuri();
+        LuoAikaLaskuri();
 
 
 
@@ -76,6 +84,26 @@ public class HT2 : PhysicsGame
         ukko.X = x;
         ukko.Y = y;
 
+
+        return ukko;
+    }
+
+    public static PhysicsObject LuoVesa(PhysicsGame peli, string tunniste, double x, double y)
+    {
+        PhysicsObject ukko = new PhysicsObject(70, 100, Shape.Rectangle);
+        ukko.Color = Color.Black;
+
+        // ukko.Hit(suunta);
+        ukko.Tag = tunniste;
+        // ukko.Mass = 1.0;
+        peli.Add(ukko, -1);
+        ukko.LinearDamping = 0.93;
+        ukko.Restitution = 0;
+        ukko.AngularDamping = 0.9;
+        ukko.MaxVelocity = 40000;
+        ukko.X = x;
+        ukko.Y = y;
+        ukko.IgnoresCollisionResponse = true;
 
         return ukko;
     }
@@ -132,8 +160,8 @@ public class HT2 : PhysicsGame
         PhysicsObject karkki = new PhysicsObject(35, 35);
         karkki.Color = Color.Red;
         Add(karkki);
-        karkki.Y = 85;
-        karkki.X = 85;
+        karkki.Y = 0;
+        karkki.X = 0;
         karkki.Tag = "karkkis";
         karkki.Image = LoadImage("karkkiHR.png");
         Vector suunta = RandomGen.NextVector(300, 400);
@@ -153,8 +181,8 @@ public class HT2 : PhysicsGame
         PhysicsObject kyna = new PhysicsObject(40, 20);
         kyna.Color = Color.Red;
         Add(kyna);
-        kyna.Y = 100;
-        kyna.X = 100;
+        kyna.Y = 0;
+        kyna.X = 0;
         kyna.Tag = "kynis";
         kyna.Image = LoadImage("kynaHT.png");
         Vector suunta = RandomGen.NextVector(300, 400);
@@ -169,10 +197,40 @@ public class HT2 : PhysicsGame
         rajahdys.UseShockWave = false;
         this.Add(rajahdys);
         Remove(kyna);
+        elamaLaskuri.Value -= 1;
+    }
+
+    void LuoAikaLaskuri()
+    {
+        Timer aikaLaskuri = new Timer();
+        aikaLaskuri.Start();
+
+        Label aikaNaytto = new Label();
+        aikaNaytto.TextColor = Color.Black;
+        aikaNaytto.DecimalPlaces = 1;
+        aikaNaytto.X = Screen.Right - 150;
+        aikaNaytto.Y = Screen.Top - 20;
+        aikaNaytto.BindTo(aikaLaskuri.SecondCounter);
+        Add(aikaNaytto, 2);
+    }
+
+    void LuoElamaLaskuri()
+    {
+        elamaLaskuri = new DoubleMeter(10);
+        elamaLaskuri.MaxValue = 10;
+        elamaLaskuri.LowerLimit += ElamaLoppui;
+
+        ProgressBar elamaPalkki = new ProgressBar(150, 20);
+        elamaPalkki.X = Screen.Left + 150;
+        elamaPalkki.Y = Screen.Top - 20;
+        elamaPalkki.BindTo(elamaLaskuri);
+        Add(elamaPalkki);
+    }
+
+    void ElamaLoppui()
+    {
+        MessageDisplay.Add("Elämät loppuivat, voi voi.");
     }
 
 
-
-    // Moro Valte
-    // VALTE VALTE Moro
 }
