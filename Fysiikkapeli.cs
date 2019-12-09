@@ -216,7 +216,7 @@ public class HT2 : PhysicsGame
 
     void LuoElamaLaskuri()
     {
-        elamaLaskuri = new DoubleMeter(10);
+        elamaLaskuri = new DoubleMeter(5);
         elamaLaskuri.MaxValue = 10;
         elamaLaskuri.LowerLimit += ElamaLoppui;
 
@@ -230,6 +230,7 @@ public class HT2 : PhysicsGame
     void ElamaLoppui()
     {
         MessageDisplay.Add("Elämät loppuivat, voi voi.");
+        ClearAll();
     }
 
 
