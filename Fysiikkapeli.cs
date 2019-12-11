@@ -5,8 +5,10 @@ using Jypeli.Assets;
 using Jypeli.Controls;
 using Jypeli.Widgets;
 
+/// @author Valtteri Korhonen ja Juuso Putkonen
+/// @version 11.12.2019
 /// <summary>
-/// 
+/// Peli, jossa väistellään kyniä ja kerätään karkkeja
 /// </summary>
 public class HT2 : PhysicsGame
 {
@@ -19,18 +21,27 @@ public class HT2 : PhysicsGame
     private DoubleMeter karkkiLaskuri;
 
     private SoundEffect karkkiAani = LoadSoundEffect("powerUp2.wav");
-    Timer synnytaKynia;
-    Timer synnytaKarkkeja;
-    Timer karkkiHeittoja;
+    private Timer synnytaKynia;
+    private Timer synnytaKarkkeja;
+    private Timer karkkiHeittoja;
 
     public override void Begin()
     {
-        Valikko();
+        AlkuValikko();
     }
 
-    private void Valikko()
+    private void AlkuValikko()
     {
         MultiSelectWindow alkuValikko = new MultiSelectWindow("Pelin alkuvalikko",
+"Aloita peli", "Lopeta");
+        Add(alkuValikko);
+        alkuValikko.AddItemHandler(0, AloitaPeli);
+        alkuValikko.AddItemHandler(1, Exit);
+    }
+
+    private void ToinenValikko()
+    {
+        MultiSelectWindow alkuValikko = new MultiSelectWindow("Kuolit!",
 "Aloita peli", "Lopeta");
         Add(alkuValikko);
         alkuValikko.AddItemHandler(0, AloitaPeli);
@@ -47,10 +58,10 @@ public class HT2 : PhysicsGame
         Mouse.IsCursorVisible = true;
 
         PhysicsObject pelaaja = LuoNelikulmio(this, "pelaaja1", -350, -350);
-        PhysicsObject vesa = LuoVesa(this, "vesa", 0, 0);
+        PhysicsObject vihollinen = LuoVihollinen(this, "vihollinen", 0, 0);
 
-        pelaaja.Image = LoadImage("ukko.png");
-        vesa.Image = LoadImage("vessuli.png");
+        pelaaja.Image = LoadImage("BOI.png");
+        vihollinen.Image = LoadImage("vessuli.png");
 
         AddCollisionHandler(pelaaja, "kynis", kynaOsuuPelaajaan); ;
         AddCollisionHandler(pelaaja, "karkkis", pelaajaTormaaKarkkiin);
@@ -96,7 +107,7 @@ public class HT2 : PhysicsGame
     /// <returns></returns>
     private static PhysicsObject LuoNelikulmio(PhysicsGame peli, string tunniste, double x, double y)
     {
-        PhysicsObject ukko = new PhysicsObject(70, 100, Shape.Rectangle);
+        PhysicsObject ukko = new PhysicsObject(100, 100, Shape.Rectangle);
         ukko.Color = Color.Black;
 
         // ukko.Hit(suunta);
@@ -122,7 +133,7 @@ public class HT2 : PhysicsGame
     /// <param name="x">fysiikkaolion x-koordinaatti</param>
     /// <param name="y">fysiikkaolion y-koordinaatti</param>
     /// <returns></returns>
-    private static PhysicsObject LuoVesa(PhysicsGame peli, string tunniste, double x, double y)
+    private static PhysicsObject LuoVihollinen(PhysicsGame peli, string tunniste, double x, double y)
     {
         PhysicsObject ukko = new PhysicsObject(200, 200, Shape.Rectangle);
         ukko.Color = Color.Black;
@@ -275,7 +286,7 @@ public class HT2 : PhysicsGame
         synnytaKarkkeja.Stop();
         synnytaKynia.Stop();
         ClearAll();
-        Valikko();
+        ToinenValikko();
     }
 
 

@@ -15,6 +15,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Content\BOI.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Content\emptyHearts.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
