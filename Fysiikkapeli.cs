@@ -19,8 +19,9 @@ public class HT2 : PhysicsGame
     private DoubleMeter karkkiLaskuri;
 
     private SoundEffect karkkiAani = LoadSoundEffect("powerUp2.wav");
-    Timer synnytaKynia = new Timer();
-    Timer synnytaKarkkeja = new Timer();
+    Timer synnytaKynia;
+    Timer synnytaKarkkeja;
+    Timer karkkiHeittoja;
 
     public override void Begin()
     {
@@ -64,15 +65,17 @@ public class HT2 : PhysicsGame
         // MediaPlayer.Play("KarkkiPeli_01.mp3");
         // MediaPlayer.IsRepeating = true;
 
+        synnytaKynia = new Timer();
         synnytaKynia.Interval = 1.5;
         synnytaKynia.Timeout += LuoKyna;
         synnytaKynia.Start();
 
+        synnytaKarkkeja = new Timer();
         synnytaKarkkeja.Interval = 4.0;
         synnytaKarkkeja.Timeout += LuoKarkki;
         synnytaKarkkeja.Start();
 
-        Timer karkkiHeittoja = new Timer();
+        karkkiHeittoja = new Timer();
         karkkiHeittoja.Interval = 10;
         karkkiHeittoja.Timeout += HeittoNopeus;
         karkkiHeittoja.Start();
@@ -151,8 +154,8 @@ public class HT2 : PhysicsGame
         PhysicsObject karkki = new PhysicsObject(35, 35);
         karkki.Color = Color.Red;
         Add(karkki);
-        karkki.Y = 10;
-        karkki.X = 70;
+        karkki.Y = 72;
+        karkki.X = 75;
         karkki.Tag = "karkkis";
         karkki.Image = LoadImage("karkkiHR.png");
         Vector suunta = RandomGen.NextVector(300, 500);
@@ -181,8 +184,8 @@ public class HT2 : PhysicsGame
         PhysicsObject kyna = new PhysicsObject(40, 20);
         kyna.Color = Color.Red;
         Add(kyna);
-        kyna.Y = 12;
-        kyna.X = 70;
+        kyna.Y = 72;
+        kyna.X = 75;
         kyna.Tag = "kynis";
         kyna.Image = LoadImage("kynaHT.png");
         Vector suunta = RandomGen.NextVector(300, 400);
@@ -268,6 +271,9 @@ public class HT2 : PhysicsGame
 
     private void ElamaLoppui()
     {
+        karkkiHeittoja.Stop();
+        synnytaKarkkeja.Stop();
+        synnytaKynia.Stop();
         ClearAll();
         Valikko();
     }
