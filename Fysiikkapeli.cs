@@ -10,8 +10,6 @@ using Jypeli.Widgets;
 /// </summary>
 public class HT2 : PhysicsGame
 {
-    /// Pelaajan liike
-
     Vector nopeusYlos = new Vector(0, 2000);
     Vector nopeusAlas = new Vector(0, -2000);
     Vector nopeusVasemmalle = new Vector(-2000, 0);
@@ -24,18 +22,32 @@ public class HT2 : PhysicsGame
 
     public override void Begin()
     {
+        Valikko();
+    }
+
+    void Valikko()
+    {
+        MultiSelectWindow alkuValikko = new MultiSelectWindow("Pelin alkuvalikko",
+"Aloita peli", "Lopeta");
+        Add(alkuValikko);
+        alkuValikko.AddItemHandler(0, AloitaPeli);
+        alkuValikko.AddItemHandler(1, Exit);
+    }
+
+    /// <summary>
+    /// Luo kentän, pelihahmot, asettaa napit, aloittaa ajastimia ja laskureita.
+    /// </summary>
+    void AloitaPeli()
+    {
         Level.Background.Image = LoadImage("Tausta.png");
         Level.CreateBorders();
         Mouse.IsCursorVisible = true;
-
-
 
         PhysicsObject pelaaja = LuoNelikulmio(this, "pelaaja1", -350, -350);
         PhysicsObject vesa = LuoVesa(this, "vesa", 0, 0);
 
         pelaaja.Image = LoadImage("ukko.png");
         vesa.Image = LoadImage("vessuli.png");
-
 
         AddCollisionHandler(pelaaja, "kynis", kynaOsuuPelaajaan); ;
         AddCollisionHandler(pelaaja, "karkkis", pelaajaTormaaKarkkiin);
@@ -45,7 +57,7 @@ public class HT2 : PhysicsGame
         Keyboard.Listen(Key.Down, ButtonState.Down, LyoUkkoa, "Liikuta alas", pelaaja, nopeusAlas);
         Keyboard.Listen(Key.Right, ButtonState.Down, LyoUkkoa, "Liikuta oikealle", pelaaja, nopeusOikealle);
         Keyboard.Listen(Key.Left, ButtonState.Down, LyoUkkoa, "Liikuta vasemmalle", pelaaja, nopeusVasemmalle);
-        Keyboard.Listen(Key.Escape, ButtonState.Pressed, Exit, "Lopeta peli");
+        Keyboard.Listen(Key.Escape, ButtonState.Pressed, ConfirmExit, "Lopeta peli");
 
         // MediaPlayer.Play("KarkkiPeli_01.mp3");
         // MediaPlayer.IsRepeating = true;
@@ -60,19 +72,20 @@ public class HT2 : PhysicsGame
         synnytaKarkkeja.Timeout += LuoKarkki;
         synnytaKarkkeja.Start();
 
-        /*Timer pisteet = new Timer();
-        pisteet.Interval = 1.0;
-        pisteet.Timeout += lisaaPiste;
-        pisteet.Start();*/
-
         LuoElamaLaskuri();
         LuoAikaLaskuri();
         LuoKarkkiLaskuri();
 
-
-
     }
 
+    /// <summary>
+    /// Luo pelaajan hahmon
+    /// </summary>
+    /// <param name="peli">pelikenttä</param>
+    /// <param name="tunniste">sana, jolla tietää mistä fysiikkaoliosta kyse</param>
+    /// <param name="x">fysiikkaolion x-koordinaatti</param>
+    /// <param name="y">fysiikkaolion y-koordinaatti</param>
+    /// <returns></returns>
     public static PhysicsObject LuoNelikulmio(PhysicsGame peli, string tunniste, double x, double y)
     {
         PhysicsObject ukko = new PhysicsObject(70, 100, Shape.Rectangle);
@@ -93,6 +106,14 @@ public class HT2 : PhysicsGame
         return ukko;
     }
 
+    /// <summary>
+    /// Luo vihollishahmon
+    /// </summary>
+    /// <param name="peli">pelikenttä</param>
+    /// <param name="tunniste">sana, jolla tietää mistä fysiikkaoliosta kyse</param>
+    /// <param name="x">fysiikkaolion x-koordinaatti</param>
+    /// <param name="y">fysiikkaolion y-koordinaatti</param>
+    /// <returns></returns>
     public static PhysicsObject LuoVesa(PhysicsGame peli, string tunniste, double x, double y)
     {
         PhysicsObject ukko = new PhysicsObject(200, 200, Shape.Rectangle);
@@ -133,6 +154,11 @@ public class HT2 : PhysicsGame
         karkki.LifetimeLeft = TimeSpan.FromSeconds(10.0);
     }
 
+    /// <summary>
+    /// Kun pelaaja törmää karkkiin karkkipalkki täyttyy. Viisi karkkia kerätessä saa yhden elämän lisää.
+    /// </summary>
+    /// <param name="pelaaja">Pelaaja on olio, jota liikutetaan. Sillä on tarkoitus kerätä karkkeja</param>
+    /// <param name="karkki">Karkki on esine, joka liikkuu ja niitä täytyy kerätä</param>
     void pelaajaTormaaKarkkiin(PhysicsObject pelaaja, PhysicsObject karkki)
     {
         pelaaja.Color = new Color(RandomGen.NextInt(0, 255), RandomGen.NextInt(0, 255), RandomGen.NextInt(0, 255));
@@ -140,7 +166,9 @@ public class HT2 : PhysicsGame
         karkkiLaskuri.Value += 1;
     }
 
-
+    /// <summary>
+    /// Aliohjelma tekee liikkuvan kynän, jota täytyy väistellä.
+    /// </summary>
     void LuoKyna()
     {
         PhysicsObject kyna = new PhysicsObject(40, 20);
@@ -155,6 +183,11 @@ public class HT2 : PhysicsGame
         kyna.LifetimeLeft = TimeSpan.FromSeconds(10.0);
     }
 
+    /// <summary>
+    /// Kynän osuessa pelaajaan tapahtuu räjähdys ja pelaajalta lähtee yksi elämä.
+    /// </summary>
+    /// <param name="pelaaja">Pelaaja on olio, jolla peliä pelataan.</param>
+    /// <param name="kyna">Kynä on esine, jota on tarkoitus väistää.</param>
     void kynaOsuuPelaajaan(PhysicsObject pelaaja, PhysicsObject kyna)
     {
         Explosion rajahdys = new Explosion(kyna.Width * 2);
@@ -165,6 +198,9 @@ public class HT2 : PhysicsGame
         elamaLaskuri.Value -= 1;
     }
 
+    /// <summary>
+    /// Aikalaskurista näkee miten pitkään on pysynyt elossa. Mitä pitempään pysyy elossa, sitä parempi tulos on.
+    /// </summary>
     void LuoAikaLaskuri()
     {
         Timer aikaLaskuri = new Timer();
@@ -179,13 +215,16 @@ public class HT2 : PhysicsGame
         Add(aikaNaytto, 2);
     }
 
+    /// <summary>
+    /// Elämien määrä, josta visuaalisesti näkee montako elämää on jäljellä.
+    /// </summary>
     void LuoElamaLaskuri()
     {
         elamaLaskuri = new DoubleMeter(5);
         elamaLaskuri.MaxValue = 5;
         elamaLaskuri.LowerLimit += ElamaLoppui;
 
-        ProgressBar elamaPalkki = new ProgressBar(150, 20);
+        ProgressBar elamaPalkki = new ProgressBar(150, 30);
         elamaPalkki.X = Screen.Center.X;
         elamaPalkki.Y = Screen.Top - 20;
         elamaPalkki.BindTo(elamaLaskuri);
@@ -194,26 +233,32 @@ public class HT2 : PhysicsGame
         Add(elamaPalkki);
     }
 
+    /// <summary>
+    /// Kerätessä karkkeja karkkipalkki täyttyy. Kun karkkipalkki on täynnä saa yhden elämän lisää.
+    /// </summary>
     void LuoKarkkiLaskuri()
     {
         karkkiLaskuri = new DoubleMeter(0);
         karkkiLaskuri.MaxValue = 5;
         karkkiLaskuri.UpperLimit += ViisiKarkkia;
 
-        ProgressBar karkkiPalkki = new ProgressBar(150, 20);
+        ProgressBar karkkiPalkki = new ProgressBar(150, 30);
         karkkiPalkki.X = Screen.Center.X;
         karkkiPalkki.Y = Screen.Top - 60;
         karkkiPalkki.BindTo(karkkiLaskuri);
-        karkkiPalkki.Image = LoadImage("tyhjaHorizontal.png");
-        karkkiPalkki.BarImage = LoadImage("taysiHorizontal.png");
+        karkkiPalkki.Image = LoadImage("tyhjatKarkit.png");
+        karkkiPalkki.BarImage = LoadImage("taydetKarkit.png");
         Add(karkkiPalkki);
     }
     void ElamaLoppui()
     {
-        MessageDisplay.Add("Elämät loppuivat, voi voi.");
-        Exit();
+        ClearAll();
+        Valikko();
     }
 
+    /// <summary>
+    /// Kerätessä viisi karkkia saa yhden elämän lisää.
+    /// </summary>
     void ViisiKarkkia()
     {
         elamaLaskuri.Value += 1;
