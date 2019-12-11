@@ -18,38 +18,42 @@ public class HT2 : PhysicsGame
     Vector nopeusOikealle = new Vector(2000, 0);
 
     DoubleMeter elamaLaskuri;
+    DoubleMeter karkkiLaskuri;
 
+    SoundEffect karkkiAani = LoadSoundEffect("powerUp2.wav");
 
     public override void Begin()
     {
         Level.Background.Image = LoadImage("Tausta.png");
         Level.CreateBorders();
+        Mouse.IsCursorVisible = true;
+
 
 
         PhysicsObject pelaaja = LuoNelikulmio(this, "pelaaja1", -350, -350);
         PhysicsObject vesa = LuoVesa(this, "vesa", 0, 0);
 
-        pelaaja.Image = LoadImage("LINUX.png");
-        vesa.Image = LoadImage("spookyseason.png");
+        pelaaja.Image = LoadImage("ukko.png");
+        vesa.Image = LoadImage("vessuli.png");
 
 
         AddCollisionHandler(pelaaja, "kynis", kynaOsuuPelaajaan); ;
         AddCollisionHandler(pelaaja, "karkkis", pelaajaTormaaKarkkiin);
 
-        Keyboard.Listen(Key.F1, ButtonState.Pressed, ShowControlHelp, "Näytä");
-        Keyboard.Listen(Key.Up, ButtonState.Down, LyoUkkoa, "lyö", pelaaja, nopeusYlos);
-        Keyboard.Listen(Key.Down, ButtonState.Down, LyoUkkoa, "lyö a", pelaaja, nopeusAlas);
-        Keyboard.Listen(Key.Right, ButtonState.Down, LyoUkkoa, "lyö oi", pelaaja, nopeusOikealle);
-        Keyboard.Listen(Key.Left, ButtonState.Down, LyoUkkoa, "lyö v", pelaaja, nopeusVasemmalle);
+        Keyboard.Listen(Key.F1, ButtonState.Pressed, ShowControlHelp, "Näytä napit");
+        Keyboard.Listen(Key.Up, ButtonState.Down, LyoUkkoa, "Liikuta ylös", pelaaja, nopeusYlos);
+        Keyboard.Listen(Key.Down, ButtonState.Down, LyoUkkoa, "Liikuta alas", pelaaja, nopeusAlas);
+        Keyboard.Listen(Key.Right, ButtonState.Down, LyoUkkoa, "Liikuta oikealle", pelaaja, nopeusOikealle);
+        Keyboard.Listen(Key.Left, ButtonState.Down, LyoUkkoa, "Liikuta vasemmalle", pelaaja, nopeusVasemmalle);
         Keyboard.Listen(Key.Escape, ButtonState.Pressed, Exit, "Lopeta peli");
 
         // MediaPlayer.Play("KarkkiPeli_01.mp3");
         // MediaPlayer.IsRepeating = true;
 
-        Timer synnytaOlioita = new Timer();
-        synnytaOlioita.Interval = 3.0;
-        synnytaOlioita.Timeout += LuoKyna;
-        synnytaOlioita.Start();
+        Timer synnytaKynia = new Timer();
+        synnytaKynia.Interval = 1.5;
+        synnytaKynia.Timeout += LuoKyna;
+        synnytaKynia.Start();
 
         Timer synnytaKarkkeja = new Timer();
         synnytaKarkkeja.Interval = 4.0;
@@ -63,6 +67,7 @@ public class HT2 : PhysicsGame
 
         LuoElamaLaskuri();
         LuoAikaLaskuri();
+        LuoKarkkiLaskuri();
 
 
 
@@ -79,7 +84,7 @@ public class HT2 : PhysicsGame
         peli.Add(ukko);
         ukko.LinearDamping = 0.93;
         ukko.Restitution = 0;
-        ukko.AngularDamping = 0.9;
+        ukko.AngularDamping = 0.1;
         ukko.MaxVelocity = 40000;
         ukko.X = x;
         ukko.Y = y;
@@ -90,7 +95,7 @@ public class HT2 : PhysicsGame
 
     public static PhysicsObject LuoVesa(PhysicsGame peli, string tunniste, double x, double y)
     {
-        PhysicsObject ukko = new PhysicsObject(70, 100, Shape.Rectangle);
+        PhysicsObject ukko = new PhysicsObject(200, 200, Shape.Rectangle);
         ukko.Color = Color.Black;
 
         // ukko.Hit(suunta);
@@ -113,47 +118,6 @@ public class HT2 : PhysicsGame
         ukko.Push(suunta);
     }
 
-    /*public static PhysicsObject Kynat(PhysicsGame peli)
-    {
-        PhysicsObject kyna = new PhysicsObject(40, 20);
-        kyna.Color = Color.Red;
-        peli.Add(kyna);
-        
-        kyna.Y = 100;
-        kyna.X = 100;
-        kyna.Tag = "kynis";
-        Vector suunta = RandomGen.NextVector(100, 200);
-        kyna.Hit(suunta);
-        kyna.LifetimeLeft = TimeSpan.FromSeconds(5.0);
-        kyna.Image = LoadImage("linetool");
-        
-        
-        kyna.Tag = "kynis";
-        kyna.Y = 14;
-        kyna.X = 14;
-        Vector suunta = RandomGen.NextVector(400, 500);
-        kyna.Hit(suunta);
-        kyna.LifetimeLeft = TimeSpan.FromSeconds(5.0);
-        // kyna.Image = LoadImage("kynaHT");
-        // test
-
-
-        return kyna;
-    }*/
-
-    /*public static PhysicsObject Karkit(PhysicsGame peli)
-    {
-        PhysicsObject karkki = new PhysicsObject(35, 35);
-        karkki.Color = Color.Blue;
-        peli.Add(karkki);
-        karkki.Y = 10;
-        karkki.X = 10;
-        Vector suunta = RandomGen.NextVector(400, 500);
-        karkki.Hit(suunta);
-        karkki.Image = LoadImage("karkkiHR");
-
-        return karkki;
-    }*/
 
     void LuoKarkki()
     {
@@ -173,6 +137,7 @@ public class HT2 : PhysicsGame
     {
         pelaaja.Color = new Color(RandomGen.NextInt(0, 255), RandomGen.NextInt(0, 255), RandomGen.NextInt(0, 255));
         Remove(karkki);
+        karkkiLaskuri.Value += 1;
     }
 
 
@@ -217,20 +182,44 @@ public class HT2 : PhysicsGame
     void LuoElamaLaskuri()
     {
         elamaLaskuri = new DoubleMeter(5);
-        elamaLaskuri.MaxValue = 10;
+        elamaLaskuri.MaxValue = 5;
         elamaLaskuri.LowerLimit += ElamaLoppui;
 
         ProgressBar elamaPalkki = new ProgressBar(150, 20);
-        elamaPalkki.X = Screen.Left + 150;
+        elamaPalkki.X = Screen.Center.X;
         elamaPalkki.Y = Screen.Top - 20;
         elamaPalkki.BindTo(elamaLaskuri);
+        elamaPalkki.Image = LoadImage("emptyHearts.png");
+        elamaPalkki.BarImage = LoadImage("fullHearts.png");
         Add(elamaPalkki);
     }
 
+    void LuoKarkkiLaskuri()
+    {
+        karkkiLaskuri = new DoubleMeter(0);
+        karkkiLaskuri.MaxValue = 5;
+        karkkiLaskuri.UpperLimit += ViisiKarkkia;
+
+        ProgressBar karkkiPalkki = new ProgressBar(150, 20);
+        karkkiPalkki.X = Screen.Center.X;
+        karkkiPalkki.Y = Screen.Top - 60;
+        karkkiPalkki.BindTo(karkkiLaskuri);
+        karkkiPalkki.Image = LoadImage("tyhjaHorizontal.png");
+        karkkiPalkki.BarImage = LoadImage("taysiHorizontal.png");
+        Add(karkkiPalkki);
+    }
     void ElamaLoppui()
     {
         MessageDisplay.Add("Elämät loppuivat, voi voi.");
-        ClearAll();
+        Exit();
+    }
+
+    void ViisiKarkkia()
+    {
+        elamaLaskuri.Value += 1;
+        karkkiLaskuri.Value = 0;
+        karkkiAani.Play();
+        MessageDisplay.Add("Sait yhden elämän lisää!");
     }
 
 
