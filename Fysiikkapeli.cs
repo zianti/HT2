@@ -10,22 +10,24 @@ using Jypeli.Widgets;
 /// </summary>
 public class HT2 : PhysicsGame
 {
-    Vector nopeusYlos = new Vector(0, 2000);
-    Vector nopeusAlas = new Vector(0, -2000);
-    Vector nopeusVasemmalle = new Vector(-2000, 0);
-    Vector nopeusOikealle = new Vector(2000, 0);
+    private Vector nopeusYlos = new Vector(0, 2000);
+    private Vector nopeusAlas = new Vector(0, -2000);
+    private Vector nopeusVasemmalle = new Vector(-2000, 0);
+    private Vector nopeusOikealle = new Vector(2000, 0);
 
-    DoubleMeter elamaLaskuri;
-    DoubleMeter karkkiLaskuri;
+    private DoubleMeter elamaLaskuri;
+    private DoubleMeter karkkiLaskuri;
 
-    SoundEffect karkkiAani = LoadSoundEffect("powerUp2.wav");
+    private SoundEffect karkkiAani = LoadSoundEffect("powerUp2.wav");
+    Timer synnytaKynia = new Timer();
+    Timer synnytaKarkkeja = new Timer();
 
     public override void Begin()
     {
         Valikko();
     }
 
-    void Valikko()
+    private void Valikko()
     {
         MultiSelectWindow alkuValikko = new MultiSelectWindow("Pelin alkuvalikko",
 "Aloita peli", "Lopeta");
@@ -37,7 +39,7 @@ public class HT2 : PhysicsGame
     /// <summary>
     /// Luo kentän, pelihahmot, asettaa napit, aloittaa ajastimia ja laskureita.
     /// </summary>
-    void AloitaPeli()
+    private void AloitaPeli()
     {
         Level.Background.Image = LoadImage("Tausta.png");
         Level.CreateBorders();
@@ -62,15 +64,18 @@ public class HT2 : PhysicsGame
         // MediaPlayer.Play("KarkkiPeli_01.mp3");
         // MediaPlayer.IsRepeating = true;
 
-        Timer synnytaKynia = new Timer();
         synnytaKynia.Interval = 1.5;
         synnytaKynia.Timeout += LuoKyna;
         synnytaKynia.Start();
 
-        Timer synnytaKarkkeja = new Timer();
         synnytaKarkkeja.Interval = 4.0;
         synnytaKarkkeja.Timeout += LuoKarkki;
         synnytaKarkkeja.Start();
+
+        Timer karkkiHeittoja = new Timer();
+        karkkiHeittoja.Interval = 10;
+        karkkiHeittoja.Timeout += HeittoNopeus;
+        karkkiHeittoja.Start();
 
         LuoElamaLaskuri();
         LuoAikaLaskuri();
@@ -86,7 +91,7 @@ public class HT2 : PhysicsGame
     /// <param name="x">fysiikkaolion x-koordinaatti</param>
     /// <param name="y">fysiikkaolion y-koordinaatti</param>
     /// <returns></returns>
-    public static PhysicsObject LuoNelikulmio(PhysicsGame peli, string tunniste, double x, double y)
+    private static PhysicsObject LuoNelikulmio(PhysicsGame peli, string tunniste, double x, double y)
     {
         PhysicsObject ukko = new PhysicsObject(70, 100, Shape.Rectangle);
         ukko.Color = Color.Black;
@@ -101,10 +106,10 @@ public class HT2 : PhysicsGame
         ukko.MaxVelocity = 40000;
         ukko.X = x;
         ukko.Y = y;
-
-
+        ukko.CollisionIgnoreGroup = 1;
         return ukko;
     }
+
 
     /// <summary>
     /// Luo vihollishahmon
@@ -114,7 +119,7 @@ public class HT2 : PhysicsGame
     /// <param name="x">fysiikkaolion x-koordinaatti</param>
     /// <param name="y">fysiikkaolion y-koordinaatti</param>
     /// <returns></returns>
-    public static PhysicsObject LuoVesa(PhysicsGame peli, string tunniste, double x, double y)
+    private static PhysicsObject LuoVesa(PhysicsGame peli, string tunniste, double x, double y)
     {
         PhysicsObject ukko = new PhysicsObject(200, 200, Shape.Rectangle);
         ukko.Color = Color.Black;
@@ -134,24 +139,26 @@ public class HT2 : PhysicsGame
         return ukko;
     }
 
-    public static void LyoUkkoa(PhysicsObject ukko, Vector suunta)
+
+    private static void LyoUkkoa(PhysicsObject ukko, Vector suunta)
     {
         ukko.Push(suunta);
     }
 
 
-    void LuoKarkki()
+    private void LuoKarkki()
     {
         PhysicsObject karkki = new PhysicsObject(35, 35);
         karkki.Color = Color.Red;
         Add(karkki);
-        karkki.Y = 0;
-        karkki.X = 0;
+        karkki.Y = 10;
+        karkki.X = 70;
         karkki.Tag = "karkkis";
         karkki.Image = LoadImage("karkkiHR.png");
-        Vector suunta = RandomGen.NextVector(300, 400);
+        Vector suunta = RandomGen.NextVector(300, 500);
         karkki.Hit(suunta);
         karkki.LifetimeLeft = TimeSpan.FromSeconds(10.0);
+        karkki.CollisionIgnoreGroup = 2;
     }
 
     /// <summary>
@@ -159,7 +166,7 @@ public class HT2 : PhysicsGame
     /// </summary>
     /// <param name="pelaaja">Pelaaja on olio, jota liikutetaan. Sillä on tarkoitus kerätä karkkeja</param>
     /// <param name="karkki">Karkki on esine, joka liikkuu ja niitä täytyy kerätä</param>
-    void pelaajaTormaaKarkkiin(PhysicsObject pelaaja, PhysicsObject karkki)
+    private void pelaajaTormaaKarkkiin(PhysicsObject pelaaja, PhysicsObject karkki)
     {
         pelaaja.Color = new Color(RandomGen.NextInt(0, 255), RandomGen.NextInt(0, 255), RandomGen.NextInt(0, 255));
         Remove(karkki);
@@ -169,18 +176,20 @@ public class HT2 : PhysicsGame
     /// <summary>
     /// Aliohjelma tekee liikkuvan kynän, jota täytyy väistellä.
     /// </summary>
-    void LuoKyna()
+    private void LuoKyna()
     {
         PhysicsObject kyna = new PhysicsObject(40, 20);
         kyna.Color = Color.Red;
         Add(kyna);
-        kyna.Y = 0;
-        kyna.X = 0;
+        kyna.Y = 12;
+        kyna.X = 70;
         kyna.Tag = "kynis";
         kyna.Image = LoadImage("kynaHT.png");
         Vector suunta = RandomGen.NextVector(300, 400);
+  
         kyna.Hit(suunta);
         kyna.LifetimeLeft = TimeSpan.FromSeconds(10.0);
+        kyna.CollisionIgnoreGroup = 2;
     }
 
     /// <summary>
@@ -188,7 +197,7 @@ public class HT2 : PhysicsGame
     /// </summary>
     /// <param name="pelaaja">Pelaaja on olio, jolla peliä pelataan.</param>
     /// <param name="kyna">Kynä on esine, jota on tarkoitus väistää.</param>
-    void kynaOsuuPelaajaan(PhysicsObject pelaaja, PhysicsObject kyna)
+    private void kynaOsuuPelaajaan(PhysicsObject pelaaja, PhysicsObject kyna)
     {
         Explosion rajahdys = new Explosion(kyna.Width * 2);
         rajahdys.Position = kyna.Position;
@@ -196,12 +205,15 @@ public class HT2 : PhysicsGame
         this.Add(rajahdys);
         Remove(kyna);
         elamaLaskuri.Value -= 1;
+        MessageDisplay.Add("Menetit elämän!");
+        MessageDisplay.MessageTime = new TimeSpan(0, 0, 1);
     }
+
 
     /// <summary>
     /// Aikalaskurista näkee miten pitkään on pysynyt elossa. Mitä pitempään pysyy elossa, sitä parempi tulos on.
     /// </summary>
-    void LuoAikaLaskuri()
+    private void LuoAikaLaskuri()
     {
         Timer aikaLaskuri = new Timer();
         aikaLaskuri.Start();
@@ -215,10 +227,11 @@ public class HT2 : PhysicsGame
         Add(aikaNaytto, 2);
     }
 
+
     /// <summary>
     /// Elämien määrä, josta visuaalisesti näkee montako elämää on jäljellä.
     /// </summary>
-    void LuoElamaLaskuri()
+    private void LuoElamaLaskuri()
     {
         elamaLaskuri = new DoubleMeter(5);
         elamaLaskuri.MaxValue = 5;
@@ -233,10 +246,11 @@ public class HT2 : PhysicsGame
         Add(elamaPalkki);
     }
 
+
     /// <summary>
     /// Kerätessä karkkeja karkkipalkki täyttyy. Kun karkkipalkki on täynnä saa yhden elämän lisää.
     /// </summary>
-    void LuoKarkkiLaskuri()
+    private void LuoKarkkiLaskuri()
     {
         karkkiLaskuri = new DoubleMeter(0);
         karkkiLaskuri.MaxValue = 5;
@@ -250,21 +264,31 @@ public class HT2 : PhysicsGame
         karkkiPalkki.BarImage = LoadImage("taydetKarkit.png");
         Add(karkkiPalkki);
     }
-    void ElamaLoppui()
+
+
+    private void ElamaLoppui()
     {
         ClearAll();
         Valikko();
     }
 
+
     /// <summary>
     /// Kerätessä viisi karkkia saa yhden elämän lisää.
     /// </summary>
-    void ViisiKarkkia()
+    private void ViisiKarkkia()
     {
         elamaLaskuri.Value += 1;
         karkkiLaskuri.Value = 0;
         karkkiAani.Play();
         MessageDisplay.Add("Sait yhden elämän lisää!");
+    }
+
+
+    private void HeittoNopeus()
+    {
+        if(synnytaKynia.Interval > 0.8) synnytaKynia.Interval -= 0.2;
+        if(synnytaKarkkeja.Interval > 1.0) synnytaKarkkeja.Interval -= 0.3;
     }
 
 
